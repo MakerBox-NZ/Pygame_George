@@ -7,12 +7,18 @@ import sys
 class Player(pygame.sprite.Sprite):
      #Spawn a player
      def __init__(self):
-          pygame.sprite.Sprite.__init(self)
+          pygame.sprite.Sprite.__init__(self)
           self.images = [  ]
           img = pygame.image.load(os.path.join('images','hero.png')).convert()
           self.images.append(img)
           self.image = self.images[0]
           self.rect = self.image.get_rect()
+
+          self.image.convert_alpha() #optimise for alpha
+          self.image.set_colorkey(alpha) #set alpha
+          
+          
+         
           
           
         
@@ -22,7 +28,11 @@ class Player(pygame.sprite.Sprite):
 '''SETUP'''
 # code runs once
 screenX = 960 #width
-screenY = 720 #heightll
+screenY = 720 #height
+alpha = (0, 0, 0)
+black = (1, 1, 1)
+white = (255, 255, 255)
+
 
 fps = 60 #frame rate
 afps = 4 #animation cycles
@@ -37,23 +47,38 @@ backdropRect = screen.get_rect()
 
 player = Player() #Spawn player
 player.rect.x = 0
-player.rect.x = 0
+player.rect.y = 0
 movingsprites = pygame.sprite.Group()
 movingsprites.add(player)
-
 
 '''MAIN LOOP'''
 # code runs many times
 while main == True:
     for event in pygame.event.get():
         if  event.type == pygame.KEYUP:
-            if event.key == ord('q'):
+          if event.key == ord('q'):
                 pygame.quit()
                 sys.exit()
                 main = False
+          if event.key == ord('a'):
+               print('left stop')
+          if event.key == ord('d'):
+               print('right stop')
+          if event.key == ord('w'):
+               print('up stop')
 
+
+        if event.type == pygame.KEYDOWN:
+          if event.key == ord('a'):
+               print('left')
+          if event.key == ord('d'):
+               print('right')
+          if event.key == ord('w'):
+               print('up')
 
     screen.blit(backdrop, backdropRect)
+    movingsprites.draw(screen)  #draw player
+
     pygame.display.flip()
     clock.tick(fps)
 
