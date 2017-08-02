@@ -4,6 +4,37 @@ import sys
 
 '''OBJECTS'''
 # put classes & functions here
+class Platform(pygame.sprite.Sprite):
+     #x location, y location, img width, img height, img file)
+     def __init__(self,xloc,yloc,imgw, imgh, img):
+          pygame.sprite.Sprite.__init__(self)
+          self.image = pygame.Surface([imgw, imgh])
+          self.image.convert_alpha()
+          self.image.set_colorkey(alpha)
+          self.blockpic = pygame.image.load(img).convert()
+          self.rect = self.image.get_rect()
+          self.rect.y = yloc
+          self.rect.x = xloc
+
+          #paint image into blocks
+          self.image.blit(self.blockpic, (0,0), (0,0,imgw,imgh))
+
+     def level1():
+          #create level 1
+          platform_list = pygame.sprite.Group()
+          block = Platform(0, 591, 768, 118,os.path.join('images','block0.png'))
+          platform_list.add(block) #after each block
+
+          return platform_list #at end of function level1
+               
+
+
+
+
+
+
+
+
 class Player(pygame.sprite.Sprite):
      #Spawn a player
      def __init__(self):
@@ -23,7 +54,8 @@ class Player(pygame.sprite.Sprite):
           self.momentumX += x
           self.momentumY += y
 
-     def update(self):
+     def update(self, enemy_list):
+     
           #update sprite position
           currentX = self.rect.x
           nextX = currentX + self.momentumX
@@ -40,6 +72,7 @@ class Enemy(pygame.sprite.Sprite):
           pygame.sprite.Sprite.__init__(self)
           self.image = pygame.image.load(os.path.join('images', img))
           self.image.convert_alpha()
+          self.rect = self.image.get_rect()
           self.image.set_colorkey(alpha)
           self.rect.x = x
           self.rect.y = y
@@ -65,7 +98,7 @@ class Enemy(pygame.sprite.Sprite):
 screenX = 960 #width
 screenY = 720 #height
 alpha = (0, 0, 0)
-black = (1, 1, 1)
+black = (0, 0, 0)
 white = (255, 255, 255)
 
 
@@ -78,6 +111,9 @@ main = True
 
 screen = pygame.display.set_mode([screenX, screenY])
 backdrop = pygame.image.load(os.path.join('images','stage.png')).convert()
+
+platform_list = Platform.level1() #set stage to Level 1
+
 backdropRect = screen.get_rect()
 
 player = Player() #Spawn player
@@ -122,7 +158,8 @@ while main == True:
 
 
     screen.blit(backdrop, backdropRect)
-    player.update() #update player postion
+    platform_list.draw(screen) #draw platforms on screen
+    player.update(enemy_list) #update player postion
     movingsprites.draw(screen)  #draw player
     enemy_list.draw(screen) #refresh enemies
     enemy.move() #move enemy sprite
