@@ -41,6 +41,11 @@ class Player(pygame.sprite.Sprite):
           pygame.sprite.Sprite.__init__(self)
           self.momentumX = 0 #move along X
           self.momentumY = 0 #move along Y
+
+          self.score = 0 #set score
+
+
+          
           self.images = [  ]
           img = pygame.image.load(os.path.join('images','hero.png')).convert()
           self.images.append(img)
@@ -54,7 +59,7 @@ class Player(pygame.sprite.Sprite):
           self.momentumX += x
           self.momentumY += y
 
-     def update(self, enemy_list):
+     def update(self, enemy_list, platform_list):
      
           #update sprite position
           currentX = self.rect.x
@@ -64,6 +69,41 @@ class Player(pygame.sprite.Sprite):
           currentY = self.rect.y
           nextY = currentY + self.momentumY
           self.rect.y = nextY
+
+
+          #collisions
+          enemy_hit_list = pygame.sprite.spritecollide(self, enemy_list, False)
+          for enemy in enemy_hit_list:
+               self.score -= 1
+               print(self.score)
+
+          block_hit_list = pygame.sprite.spritecollide(self, platform_list, False)
+          if self.momentumX > 0:
+               for block in block_hit_list:
+                    self.rect.y = currentY
+                    self.rect.x = currentX+9
+                    self.momentumY = 0
+
+
+          if self.momentumY > 0:
+               for block in block_hit_list:
+                    self.rect.y = currentY
+                    self.momentumY = 0
+                    
+
+     def gravity(self):
+          self.momentumY += 3.2  #how fast player falls
+
+          if self.rect.y >720 and self.momentumY >= 0:
+               self.momentumY = 0
+               self.rect.y = 0
+               self.rect.x = 0
+               #img = pygame.image.load(os.path.join('images','hero.png')).convert()
+
+
+
+
+          
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -87,7 +127,7 @@ class Enemy(pygame.sprite.Sprite):
 
           else:
                self.counter = 0
-               print('reset')
+               #print('reset')
 
           self.counter += 1
 
@@ -159,7 +199,8 @@ while main == True:
 
     screen.blit(backdrop, backdropRect)
     platform_list.draw(screen) #draw platforms on screen
-    player.update(enemy_list) #update player postion
+    player.gravity() #check gravity
+    player.update(enemy_list, platform_list) #update player postion
     movingsprites.draw(screen)  #draw player
     enemy_list.draw(screen) #refresh enemies
     enemy.move() #move enemy sprite
