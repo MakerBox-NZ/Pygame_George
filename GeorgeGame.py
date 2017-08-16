@@ -22,8 +22,10 @@ class Platform(pygame.sprite.Sprite):
      def level1():
           #create level 1
           platform_list = pygame.sprite.Group()
-          block = Platform(0, 591, 768, 118,os.path.join('images','block0.png'))
+          block = Platform(0, 591, 500, 77,os.path.join('images','block0.png'))
+          block2 = Platform(0, 1100, 500, 77,os.path.join('images','block0.png'))
           platform_list.add(block) #after each block
+          platform_list.add(block2) 
 
           return platform_list #at end of function level1
                
@@ -114,7 +116,7 @@ class Enemy(pygame.sprite.Sprite):
           self.image.convert_alpha()
           self.rect = self.image.get_rect()
           self.image.set_colorkey(alpha)
-          self.rect.x = x
+          self.rect.x = x  
           self.rect.y = y
           self.counter = 0 #counter varible
           
@@ -123,7 +125,7 @@ class Enemy(pygame.sprite.Sprite):
           if self.counter >= 0 and self.counter <= 30:
                self.rect.x -= 2
           elif self.counter >= 30 and self.counter  <= 60:
-               self.rect.x == 2
+               self.rect.x += 2
 
           else:
                self.counter = 0
@@ -163,6 +165,9 @@ movingsprites = pygame.sprite.Group()
 movingsprites.add(player)
 movesteps = 10 #how fast to move
 
+forwardX = 600 #when to scroll
+backwardX = 150 #when to scroll
+
 #enemy code
 enemy = Enemy(100,50,'enemy.png') #spawn enemy
 enemy_list = pygame.sprite.Group() #create enemy group
@@ -171,48 +176,60 @@ enemy_list.add(enemy) #add enemy to group
 '''MAIN LOOP'''
 # code runs many times
 while main == True:
-    for event in pygame.event.get():
-        if  event.type == pygame.KEYDOWN:
-          if event.key == ord('q'):
-                pygame.quit()
-                sys.exit()
-                main = False
-          if event.key == ord('a'):
-               player.control(-movesteps, 0)
-               print('left stop')
-          if event.key == ord('d'):
-               player.control(movesteps, 0)
-               print('right stop')
-          if event.key == ord('w'):
-               print('up stop')
-
-        if event.type == pygame.KEYUP:
-         if event.key == ord('a'):
-               player.control(movesteps, 0)
-               print('left')
-         if event.key == ord('d'):
-               player.control(-movesteps, 0)
-               print('right')
-         if event.key == ord('w'):
-               print('up')
-
-
-    screen.blit(backdrop, backdropRect)
-    platform_list.draw(screen) #draw platforms on screen
-    player.gravity() #check gravity
-    player.update(enemy_list, platform_list) #update player postion
-    movingsprites.draw(screen)  #draw player
-    enemy_list.draw(screen) #refresh enemies
-    enemy.move() #move enemy sprite
-    
+     for event in pygame.event.get():
+          if  event.type == pygame.KEYDOWN:
+               if event.key == ord('q'):
+                    pygame.quit()
+                    sys.exit()
+                    main = False
+               if event.key == ord('a'):
+                    player.control(-movesteps, 0)
+                    print('left stop')
+               if event.key == ord('d'):
+                    player.control(movesteps, 0)
+                    print('right stop')
+               if event.key == ord('w'):
+                    print('up stop')
+          if event.type == pygame.KEYUP:
+               if event.key == ord('a'):
+                    player.control(movesteps, 0)
+                    print('left')
+               if event.key == ord('d'):
+                    player.control(-movesteps, 0)
+                    print('right')
+               if event.key == ord('w'):
+                    print('up')
 
 
-    
+     #scroll world forward
+     if player.rect.x >= forwardX:
+          scroll = player.rect.x - forwardX
+          player.rect.x = forwardX
+          for platform in platform_list:
+               platform.rect.x -= scroll
 
 
-                    
-    pygame.display.flip()
-    clock.tick(fps)
+     #scroll world backward
+     if player.rect.x <= backwardX:
+          scroll = min(1, (backwardX - player.rect.x))
+          player.rect.x = forwardX
+          for platform in platform_list:
+               platform.rect.x += scroll
+
+
+
+     screen.blit(backdrop, backdropRect)
+
+
+     platform_list.draw(screen) #draw platforms on screen
+     player.gravity() #check gravity
+     player.update(enemy_list, platform_list) #update player postion
+     movingsprites.draw(screen)  #draw player
+     enemy_list.draw(screen) #refresh enemies
+     enemy.move() #move enemy sprite
+
+     pygame.display.flip()
+     clock.tick(fps)
 
 
 
