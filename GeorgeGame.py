@@ -23,11 +23,27 @@ class Platform(pygame.sprite.Sprite):
           #create level 1
           platform_list = pygame.sprite.Group()
           block = Platform(0, 591, 500, 77,os.path.join('images','block0.png'))
-          block2 = Platform(0, 1100, 500, 77,os.path.join('images','block0.png'))
           platform_list.add(block) #after each block
-          platform_list.add(block2) 
+          
+
+          block = Platform(0, 1100, 500, 77,os.path.join('images','block1.png'))
+          platform_list.add(block) 
 
           return platform_list #at end of function level1
+
+     def loot1():
+          loot_list = pygame.sprite.Group()
+          loot = Platform(50, 550, 256, 256,os.path.join('images','loot.png'))
+          loot_list.add(loot)
+          for loot in loot_hit_list:
+               self.score += 1
+               print(self.score)
+
+
+     
+          
+          
+     
                
 
 
@@ -45,6 +61,7 @@ class Player(pygame.sprite.Sprite):
           self.momentumY = 0 #move along Y
 
           self.score = 0 #set score
+          self.damage = 0 #player is hit
 
 
           
@@ -75,9 +92,24 @@ class Player(pygame.sprite.Sprite):
 
           #collisions
           enemy_hit_list = pygame.sprite.spritecollide(self, enemy_list, False)
-          for enemy in enemy_hit_list:
-               self.score -= 1
-               print(self.score)
+          #for enemy in enemy_hit_list:
+               #self.score -= 1
+               #print(self.score)
+
+
+          if self.damage == 0:
+               for enemy in enemy_hit_list:
+                    if not self.rect.contains(enemy):
+                         self.damage = self.rect.colliderect(enemy)
+                         print(self.score)
+
+
+
+          if self.damage == 1:
+               idx = self.rect.collidelist(enemy_hit_list)
+               if idx == -1:
+                    self.damage = 0 #set damage back to 0
+                    self.score-= 1 #subtract 1 hp
 
           block_hit_list = pygame.sprite.spritecollide(self, platform_list, False)
           if self.momentumX > 0:
@@ -158,6 +190,8 @@ platform_list = Platform.level1() #set stage to Level 1
 
 backdropRect = screen.get_rect()
 
+loot1_list = Platform.level1()
+
 player = Player() #Spawn player
 player.rect.x = 0
 player.rect.y = 0
@@ -172,6 +206,7 @@ backwardX = 150 #when to scroll
 enemy = Enemy(100,50,'enemy.png') #spawn enemy
 enemy_list = pygame.sprite.Group() #create enemy group
 enemy_list.add(enemy) #add enemy to group
+
 
 '''MAIN LOOP'''
 # code runs many times
@@ -212,7 +247,7 @@ while main == True:
      #scroll world backward
      if player.rect.x <= backwardX:
           scroll = min(1, (backwardX - player.rect.x))
-          player.rect.x = forwardX
+          player.rect.x = backwardX
           for platform in platform_list:
                platform.rect.x += scroll
 
