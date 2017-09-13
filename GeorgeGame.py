@@ -81,12 +81,15 @@ class Player(pygame.sprite.Sprite):
 
           
           self.images = [  ]
-          #img = pygame.image.load(os.path.join('images','hero.png')).convert()
-          img = pygame.image.load(209, 150,os.path.join('images','hero.png'))
+          img = pygame.image.load(os.path.join('images','hero.png')).convert()
+          
            
           self.images.append(img)
           self.image = self.images[0]
           self.rect = self.image.get_rect()
+          '''self.rectcollide_pos = self.rect + 41
+          self.rectcollide_size = self.rect - 41
+          self.rectcollide = (self.rectcollide_pos, self.rectcollide_size)'''
           self.image.convert_alpha() #optimise for alpha
           self.image.set_colorkey(alpha) #set alpha
 
@@ -105,15 +108,6 @@ class Player(pygame.sprite.Sprite):
           currentY = self.rect.y
           nextY = currentY + self.momentumY
           self.rect.y = nextY
-
-
-          #gravity
-          if self.collide_delta < 6 and self.jump_delta < 6:
-               self.jump_delta =6*2
-               self.momentumY -=33 #how high to jump
-
-               self.collide_delta +=6
-               self.jump_delta +=6
 
 
           #collisions
@@ -152,6 +146,17 @@ class Player(pygame.sprite.Sprite):
                     self.collide_delta = 0 #stop jumping
 
           loot_hit_list = pygame.sprite.spritecollide(self, platform_list, False)
+          
+          
+
+
+          #gravity
+          if self.collide_delta < 6 and self.jump_delta < 6:
+               self.jump_delta =6*2
+               self.momentumY -=43 #how high to jump
+
+               self.collide_delta +=6
+               self.jump_delta +=6
           
 
      def jump (self, platform_list):
@@ -198,8 +203,46 @@ class Enemy(pygame.sprite.Sprite):
 
           self.counter += 1
 
+     def update(self,firepower, enemy_list):
+          '''
+          detect firepower collision
+          '''
+
+          fire_hit_list = pygame.sprite.spritecollide(self,firepower,False)
+          for fire in fire_hit_list:
+               enemy_list.remove(self)
+class Throwable(pygame.sprite.Sprite):
+     '''
+     spawn a throwable object
+     '''
+
+     def __init__(self,x,y,img,throw):
+          pygame.sprite.Sprite.__init__(self)
+          self.image = pygame.image.load(os.path.join('images',img))
+          self.image.convert_alpha()
+          self.image.set_colourkey(alpha)
+          self.rect   = self.image.get_rect()
+          self.rect.x = x
+          self.rect.y = y
+          self.firing = throw
 
 
+     def update(self, screenY):
+          '''
+          throw physics
+          '''
+          if self.rect.y < screenY: #vertical axis
+               self.rect.x += 15 #how fast it moves forward
+               self.rect.y += 5 #how fast it falls
+          else:
+               self.kill()       #remove throwable object
+               self.firing = 0 #free up firing slot
+
+     
+     
+
+
+               
 '''SETUP'''
 # code runs once
 screenX = 960 #width
@@ -230,6 +273,8 @@ player.rect.x = 0
 player.rect.y = 0
 movingsprites = pygame.sprite.Group()
 movingsprites.add(player)
+fire = Throwable(player.rect.x, player.rect.y, 'projectile.png',0)
+firepower = pygame.sprtie.Group()
 movesteps = 10 #how fast to move
 
 forwardX = 600 #when to scroll
@@ -265,9 +310,16 @@ while main == True:
                if event.key == ord('d'):
                     player.control(-movesteps, 0)
                     print('right')
-               if event.key == ord('w'):
+               if event.key == ord(' '):
                     player.jump(platform_list)
                     print('up')
+          if event.type == pygame.K_UP or event.key == ord('w'):
+               player.jump(platform_list)
+          if event.key == pygame.K_SPACE:
+               if not fire.firing:
+                    fire = Throwable(player.rect.x,player.rect.y,'projectile.png',1)
+                    firepower.add(fire)
+                    
                     
 
 
@@ -304,9 +356,14 @@ while main == True:
      platform_list.draw(screen) #draw platforms on screen
      player.gravity() #check gravity
      player.update(enemy_list, platform_list) #update player postion
+     enemy.move() #move enemy sprite
+
+     if fire.firing:
+          fire.update(screenY)
+          firepower.draw(screen)
+          enemy_list.update(firepower,enemy_list)
      movingsprites.draw(screen)  #draw player
      enemy_list.draw(screen) #refresh enemies
-     enemy.move() #move enemy sprite
 
      pygame.display.flip()
      clock.tick(fps)
