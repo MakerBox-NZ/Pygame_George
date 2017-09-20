@@ -52,7 +52,7 @@ class Platform(pygame.sprite.Sprite):
 
      def loot1():
           loot1_list = pygame.sprite.Group()
-          loot1 = Platform(400, 256, 256, 256,os.path.join('images','loot.png'))
+          loot1 = Platform(70, 256, 256, 256,os.path.join('images','loot.png'))
           loot1_list.add(loot1)
 
 
@@ -202,7 +202,7 @@ class Enemy(pygame.sprite.Sprite):
           self.rect = self.image.get_rect()
           self.image.set_colorkey(alpha)
           self.rect.x = 500 
-          self.rect.y = 480
+          self.rect.y = 550
           self.counter = 0 #counter varible
           
      def move(self):
